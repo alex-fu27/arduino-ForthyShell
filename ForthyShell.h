@@ -57,14 +57,14 @@ namespace ForthyShell {
 		const WordCall function;
 		const char* name;
 	public:
-		Word(const char* name, const WordCall function);
+		constexpr Word(const char* name, const WordCall function):
+			function(function), name(name)
+		{}
 
 		const char* getName() const;
 		WordCall getFunction() const;
 
 		char* call(Stack&, char*) const;
-
-		void destroy();
 	};
 
 	class Dictionary
@@ -84,7 +84,9 @@ namespace ForthyShell {
 		const Dictionary dict;
 		Stack stack;
 	public:
-		Interpreter(Dictionary&& d, size_t stack_depth = 32);
+		Interpreter(Dictionary&& d, size_t stack_depth = 32):
+			dict(d), stack(stack_depth)
+		{}
 
 		Stack& getStack();
 		const Dictionary& getDict();

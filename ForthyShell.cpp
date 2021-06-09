@@ -108,10 +108,6 @@ Error Stack::getError() const
 }
 
 
-Word::Word(const char* name, const WordCall function):
-	function(function), name(name)
-{}
-
 const char* Word::getName() const
 {
 	return name;
@@ -138,10 +134,6 @@ const Word* Dictionary::find(const char* name) const
 	}
 	return nullptr;
 }
-
-Interpreter::Interpreter(Dictionary&& d, size_t stack_depth):
-	dict(d), stack(stack_depth)
-{}
 
 Stack& Interpreter::getStack()
 {
