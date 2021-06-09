@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace e4;
+using namespace ForthyShell;
 
 Exception::Exception(const char* what)
 {

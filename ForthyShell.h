@@ -1,9 +1,9 @@
-#ifndef EMBEDFORTH_H
-#define EMBEDFORTH_H
+#ifndef FORTHYSHELL_H
+#define FORTHYSHELL_H
 
 #include <stddef.h>
 
-namespace e4 {
+namespace ForthyShell {
 	class Exception
 	{
 	protected:
@@ -97,5 +97,5 @@ namespace e4 {
 
 }
 
-#endif // EMBEDFORTH_H
+#endif // FORTHYSHELL_H
 

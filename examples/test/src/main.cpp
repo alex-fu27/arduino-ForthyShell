@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <ForthyShell.h>
 
-using namespace e4;
+using namespace ForthyShell;
 
 const Word words[] {
 	{"1", [](Stack& s) {s.push(1);}},
