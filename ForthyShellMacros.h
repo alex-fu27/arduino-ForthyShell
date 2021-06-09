@@ -1,18 +1,16 @@
 
-#define FORTHY_BINOP2(op, impl) {op, [](ForthyShell::Stack& s, char* n) { \
-	int a = s.pop(); \
-	int b = s.pop(); \
-	s.push(a impl b); \
-	return n; \
+#define FORTHY_BINOP2(op, impl) {op, [](InterpretationContext& c) { \
+	int a = c.pop(); \
+	int b = c.pop(); \
+	c.push(a impl b); \
 }}
 
 /* ( a b -- [a op b] */
 #define FORTHY_BINOP(op) FORTHY_BINOP2(#op, op)
 
 /* ( -- num */
-#define FORTHY_NUMBER(num) {#num, [](ForthyShell::Stack& s, char* n) { \
-	s.push(num); \
-	return n; \
+#define FORTHY_NUMBER(num) {#num, [](InterpretationContext& c) { \
+	c.push(num); \
 }}
 
 

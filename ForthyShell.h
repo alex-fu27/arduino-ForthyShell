@@ -36,7 +36,7 @@ namespace ForthyShell {
 
 		void push(int i);
 		int pop();
-		int get(size_t pos);
+		int get(size_t pos) const;
 
 		size_t getDepth() const;
 		void clear();
@@ -50,7 +50,8 @@ namespace ForthyShell {
 		const size_t max_depth;
 	};
 
-	using WordCall = char* (*)(Stack&, char*);
+	class InterpretationContext;
+	using WordCall = void (*)(InterpretationContext&);
 
 	class Word
 	{
@@ -64,7 +65,7 @@ namespace ForthyShell {
 		const char* getName() const;
 		WordCall getFunction() const;
 
-		char* call(Stack&, char*) const;
+		void call(InterpretationContext&) const;
 	};
 
 	class Dictionary
@@ -79,21 +80,58 @@ namespace ForthyShell {
 		{}
 
 		const Word* find(const char* name) const;
+		const Word* getWords() const { return first; }
+		const Dictionary* getNext() const { return searchAfter; };
+		size_t getNumEntries() const { return numEntries; }
+
+		static const Dictionary Default;
 	};
+
+	using OutputCallback = void (*)(const char*);
 
 	class Interpreter
 	{
-		const Dictionary dict;
+		const Dictionary& dict;
 		Stack stack;
+		int base;
+
+		bool executeLiteral(const char* test);
+
 	public:
-		Interpreter(Dictionary&& d, size_t stack_depth = 32):
-			dict(d), stack(stack_depth)
+		using PrintCallback = void (*)(const char*);
+
+		Interpreter(const Dictionary& d, size_t stack_depth = 32):
+			dict(d), stack(stack_depth), base(16)
 		{}
 
 		Stack& getStack();
 		const Dictionary& getDict();
+		int getBase();
 
-		Error execute(const char* text);
+		Error execute(const char* text, PrintCallback print);
+	};
+
+	class InterpretationContext
+	{
+	public:
+
+		InterpretationContext(Interpreter& i, char* lineBuffer,
+				Interpreter::PrintCallback pcb):
+			interpreter(i), lineBuffer(lineBuffer), printCallback(pcb)
+		{}
+
+		char* readToken(const char* delim);
+		void push(int);
+		int pop();
+		char* getLineBuffer();
+		void print(const char*);
+		const Dictionary& getDictionary();
+		int getBase();
+		Stack& getStack();
+	private:
+		Interpreter& interpreter;
+		char* lineBuffer;
+		Interpreter::PrintCallback printCallback;
 	};
 
 }

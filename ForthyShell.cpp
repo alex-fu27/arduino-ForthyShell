@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Arduino.h>
+
 using namespace ForthyShell;
 
 Error::Error(Type t, const char* i):
@@ -86,7 +88,7 @@ int Stack::pop()
 	return contents[--position];
 }
 
-int Stack::get(size_t pos)
+int Stack::get(size_t pos) const
 {
 	return contents[pos];
 }
@@ -118,9 +120,9 @@ WordCall Word::getFunction() const
 	return function;
 }
 
-char* Word::call(Stack& stack, char* line) const
+void Word::call(InterpretationContext& c) const
 {
-	return function(stack, line);
+	function(c);
 }
 
 const Word* Dictionary::find(const char* name) const
@@ -147,7 +149,20 @@ const Dictionary& Interpreter::getDict()
 	return dict;
 }
 
-Error Interpreter::execute(const char* text)
+int Interpreter::getBase()
+{
+	return base;
+}
+
+bool Interpreter::executeLiteral(const char* str)
+{
+	char* endptr;
+	long x = strtol(str, &endptr, getBase());
+	stack.push(x);
+	return (*endptr == '\0');
+}
+
+Error Interpreter::execute(const char* text, PrintCallback print)
 {
 	char* copy = new char[strlen(text) + 1];
 	strcpy(copy, text);
@@ -158,14 +173,17 @@ Error Interpreter::execute(const char* text)
 		if (current[0] != '\0') {
 			const Word* word = getDict().find(current);
 			if (!word) {
-				result = Error(Error::WORD_NOT_FOUND, current);
+				if (!executeLiteral(current)) {
+					result = Error(Error::WORD_NOT_FOUND, current);
+				}
 				goto cleanup;
 			}
-			next = word->call(stack, next);
+			InterpretationContext ic(*this, next, print);
+			word->call(ic);
+			next = ic.getLineBuffer();
 
 			Error e(stack.getError());
 			if (e != Error::OK) {
-				stack.clear();
 				result = Error(e, current);
 				goto cleanup;
 			}
@@ -173,7 +191,51 @@ Error Interpreter::execute(const char* text)
 	}
 
 cleanup:
+	if (result != Error::OK) {
+		stack.clear();
+	}
+
 	delete[] copy;
 	return result;
+}
+
+char* InterpretationContext::readToken(const char *delim)
+{
+	return strtok_r(lineBuffer, delim, &lineBuffer);
+}
+
+void InterpretationContext::push(int i)
+{
+	interpreter.getStack().push(i);
+}
+
+int InterpretationContext::pop()
+{
+	return interpreter.getStack().pop();
+}
+
+char* InterpretationContext::getLineBuffer()
+{
+	return lineBuffer;
+}
+
+const Dictionary& InterpretationContext::getDictionary()
+{
+	return interpreter.getDict();
+}
+
+Stack& InterpretationContext::getStack()
+{
+	return interpreter.getStack();
+}
+
+void InterpretationContext::print(const char* str)
+{
+	printCallback(str);
+}
+
+int InterpretationContext::getBase()
+{
+	return interpreter.getBase();
 }
 
