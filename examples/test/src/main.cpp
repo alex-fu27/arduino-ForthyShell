@@ -1,14 +1,33 @@
 #include <Arduino.h>
 #include <ForthyShell.h>
+#include <ForthyShellMacros.h>
 
 using namespace ForthyShell;
 
+char* output_literal_str(Stack&, char* next) 
+{
+	Serial.write(strtok_r(next, "\"", &next));
+	return next;
+}
+
 const Word words[] {
-	{"1", [](Stack& s) {s.push(1);}},
-	{".", [](Stack& s) {Serial.print(s.pop());}}
+	FORTHY_NUMBER(1),
+	FORTHY_BINOP(+),
+	FORTHY_BINOP(-),
+	FORTHY_BINOP2("=", ==),
+	FORTHY_BINOP2("~=", !=),
+	FORTHY_BINOP(<),
+	FORTHY_BINOP(<=),
+	FORTHY_BINOP(>),
+	FORTHY_BINOP(>=),
+	FORTHY_BINOP(*),
+	FORTHY_BINOP(/),
+	{".", [](Stack& s, char* c) {Serial.print((int) s.pop());return c;}},
+	{"u.", [](Stack& s, char* c) {Serial.print((unsigned int) s.pop());return c;}},
+	{".\"", output_literal_str},
 };
 
-Interpreter i{{words, 2}};
+Interpreter i{{words, sizeof(words) / sizeof(Word)}};
 
 void setup()
 {
