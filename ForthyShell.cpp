@@ -132,7 +132,9 @@ const Word* Dictionary::find(const char* name) const
 			return ptr;
 		}
 	}
-	return nullptr;
+	if (!searchAfter)
+		return nullptr;
+	return searchAfter->find(name);
 }
 
 Stack& Interpreter::getStack()

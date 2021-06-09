@@ -71,9 +71,11 @@ namespace ForthyShell {
 	{
 		const Word* first;
 		const size_t numEntries;
+		const Dictionary* searchAfter;
 	public:
-		constexpr Dictionary(const Word* first, size_t numEntries):
-			first(first), numEntries(numEntries)
+		constexpr Dictionary(const Word* first, size_t numEntries,
+				const Dictionary* searchAfter = nullptr):
+			first(first), numEntries(numEntries), searchAfter(searchAfter)
 		{}
 
 		const Word* find(const char* name) const;
