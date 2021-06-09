@@ -50,7 +50,7 @@ namespace ForthyShell {
 		const size_t max_depth;
 	};
 
-	using WordCall = void (*)(Stack&);
+	using WordCall = char* (*)(Stack&, char*);
 
 	class Word
 	{
@@ -62,7 +62,7 @@ namespace ForthyShell {
 		const char* getName() const;
 		WordCall getFunction() const;
 
-		void call(Stack&) const;
+		char* call(Stack&, char*) const;
 
 		void destroy();
 	};

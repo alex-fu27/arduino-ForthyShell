@@ -122,9 +122,9 @@ WordCall Word::getFunction() const
 	return function;
 }
 
-void Word::call(Stack& stack) const
+char* Word::call(Stack& stack, char* line) const
 {
-	function(stack);
+	return function(stack, line);
 }
 
 const Word* Dictionary::find(const char* name) const
@@ -167,7 +167,7 @@ Error Interpreter::execute(const char* text)
 				result = Error(Error::WORD_NOT_FOUND, current);
 				goto cleanup;
 			}
-			word->call(stack);
+			next = word->call(stack, next);
 
 			Error e(stack.getError());
 			if (e != Error::OK) {
