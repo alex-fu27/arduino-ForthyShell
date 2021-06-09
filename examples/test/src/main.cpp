@@ -10,6 +10,9 @@ char* output_literal_str(Stack&, char* next)
 	return next;
 }
 
+#if __cplusplus >= 201703L
+constexpr // put words into flash
+#endif
 const Word words[] {
 	FORTHY_NUMBER(1),
 	FORTHY_BINOP(+),
