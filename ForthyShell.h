@@ -4,39 +4,32 @@
 #include <stddef.h>
 
 namespace ForthyShell {
-	class Exception
-	{
-	protected:
-		char* whatstr;
+	class Error {
 	public:
-		Exception(const char* what);
-		virtual ~Exception();
-		const char* what() const;
-	};
+		enum Type {
+			OK = 0,
+			STACK_UNDERFLOW = 1,
+			STACK_OVERFLOW = 2,
+			WORD_NOT_FOUND = 3
+		};
 
-	class StackError: public Exception
-	{
-	public:
-		using Exception::Exception;
-	};
+		Error(Type type, const char* info = nullptr);
+		Error(const Error&);
+		Error(Error&&);
+		~Error();
+		Error& operator =(Error&&);
 
-	class StackOverflow: public StackError
-	{
-	public:
-		StackOverflow(): StackError("stack overflow") {};
-	};
+		const char* getInfo() const { return info; }
+		const char* getMessage() const;
 
-	class StackUnderflow: public StackError
-	{
-	public:
-		StackUnderflow(): StackError("stack underflow") {};
+		operator Type() { return type; }
+	private:
+		Type type;
+		char* info;
 	};
 
 	class Stack
 	{
-		int* contents;
-		size_t position;
-		const size_t max_depth;
 	public:
 		Stack(size_t max_depth);
 		~Stack();
@@ -47,6 +40,14 @@ namespace ForthyShell {
 
 		size_t getDepth() const;
 		void clear();
+
+		Error getError() const;
+
+	private:
+		Error lastError;
+		int* contents;
+		size_t position;
+		const size_t max_depth;
 	};
 
 	using WordCall = void (*)(Stack&);
@@ -66,18 +67,14 @@ namespace ForthyShell {
 		void destroy();
 	};
 
-	class WordNotFound: public Exception
-	{
-	public:
-		WordNotFound(const char* name);
-	};
-
 	class Dictionary
 	{
 		const Word* first;
 		const size_t numEntries;
 	public:
-		constexpr Dictionary(const Word* first, size_t numEntries);
+		constexpr Dictionary(const Word* first, size_t numEntries):
+			first(first), numEntries(numEntries)
+		{}
 
 		const Word* find(const char* name) const;
 	};
@@ -92,7 +89,7 @@ namespace ForthyShell {
 		Stack& getStack();
 		const Dictionary& getDict();
 
-		void execute(const char* text);
+		Error execute(const char* text);
 	};
 
 }

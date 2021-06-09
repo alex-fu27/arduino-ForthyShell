@@ -4,26 +4,61 @@
 
 using namespace ForthyShell;
 
-Exception::Exception(const char* what)
+Error::Error(Type t, const char* i):
+	type(t), info(nullptr)
 {
-	size_t len = strlen(what);
-	whatstr = new char[len + 1];
-	strcpy(whatstr, what);
+	if (i) {
+		info = (char*) malloc(strlen(i) + 1);
+		strcpy(info, i);
+	}
 }
 
-Exception::~Exception()
+Error::Error(const Error& rhs):
+	type(rhs.type), info(nullptr)
 {
-	delete[] whatstr;
+	if (rhs.info) {
+		info = (char*) malloc(strlen(rhs.info) + 1);
+		strcpy(info, rhs.info);
+	}
 }
 
-const char* Exception::what() const
+Error::Error(Error&& rhs):
+	type(rhs.type), info(rhs.info)
 {
-	return whatstr;
+	rhs.info = nullptr;
 }
 
+Error& Error::operator =(Error&& rhs)
+{
+	if (info) {
+		free(info);
+	}
+	type = rhs.type;
+	info = rhs.info;
+	rhs.info = nullptr;
+	return *this;
+}
+
+Error::~Error()
+{
+	if (info) {
+		free(info);
+	}
+}
+
+const char* Error::getMessage() const
+{
+	const char* messages[]{
+		"ok",
+		"stack underflow",
+		"stack overflow",
+		"undefined word"
+	};
+	return messages[type];
+}
 
 Stack::Stack(size_t max_depth):
-	position(0), max_depth(max_depth)
+	lastError(Error::OK), position(0), max_depth(max_depth)
 {
 	contents = (int*) malloc(sizeof(*contents) * max_depth);
 }
@@ -36,7 +71,8 @@ Stack::~Stack()
 void Stack::push(int i)
 {
 	if (position == max_depth) {
-		throw StackOverflow();
+		lastError = Error(Error::STACK_OVERFLOW);
+		return;
 	}
 	contents[position++] = i;
 }
@@ -44,7 +80,8 @@ void Stack::push(int i)
 int Stack::pop()
 {
 	if (position <= 0) {
-		throw StackUnderflow();
+		lastError = Error(Error::STACK_UNDERFLOW);
+		return 0;
 	}
 	return contents[--position];
 }
@@ -62,6 +99,12 @@ size_t Stack::getDepth() const
 void Stack::clear()
 {
 	position = 0;
+	lastError = Error(Error::OK);
+}
+
+Error Stack::getError() const
+{
+	return lastError;
 }
 
 
@@ -84,18 +127,6 @@ void Word::call(Stack& stack) const
 	function(stack);
 }
 
-WordNotFound::WordNotFound(const char* name):
-	Exception("word not found: \"")
-{
-	realloc(whatstr, strlen(whatstr) + strlen(name) + 2);
-	strcat(whatstr, name);
-	strcat(whatstr, "\"");
-}
-
-constexpr Dictionary::Dictionary(const Word* first, size_t numEntries):
-	first(first), numEntries(numEntries)
-{}
-
 const Word* Dictionary::find(const char* name) const
 {
 	for (size_t i = 0; i < numEntries; ++i) {
@@ -105,7 +136,7 @@ const Word* Dictionary::find(const char* name) const
 			return ptr;
 		}
 	}
-	throw WordNotFound(name);
+	return nullptr;
 }
 
 Interpreter::Interpreter(Dictionary&& d, size_t stack_depth):
@@ -122,26 +153,33 @@ const Dictionary& Interpreter::getDict()
 	return dict;
 }
 
-void Interpreter::execute(const char* text)
+Error Interpreter::execute(const char* text)
 {
 	char* copy = new char[strlen(text) + 1];
-	try {
-		char* current = copy;
-		char* next;
-	    while(current) {
-			next = strtok(current, " ");
-			if (next[0] != '\0') {
-				const Word* word = getDict().find(current);
-				word->call(stack);
+	strcpy(copy, text);
+	char* next = copy;
+	char* current;
+	Error result(Error::OK);
+	while((current = strtok_r(next, " ", &next))) {
+		if (current[0] != '\0') {
+			const Word* word = getDict().find(current);
+			if (!word) {
+				result = Error(Error::WORD_NOT_FOUND, current);
+				goto cleanup;
 			}
-			current = next;
-		}
+			word->call(stack);
 
-		delete[] copy;
-	} catch (const Exception& e) {
-		stack.clear();
-		delete[] copy;
-		throw;
+			Error e(stack.getError());
+			if (e != Error::OK) {
+				stack.clear();
+				result = Error(e, current);
+				goto cleanup;
+			}
+		}
 	}
+
+cleanup:
+	delete[] copy;
+	return result;
 }
 
