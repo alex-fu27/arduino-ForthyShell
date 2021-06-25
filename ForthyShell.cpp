@@ -160,10 +160,13 @@ bool Interpreter::executeLiteral(const char* str)
 	int litBase = base;
 	if (str[0] == '$') {
 		litBase = 16;
+		str++;
 	} else if (str[0] == '#') {
 		litBase = 10;
+		str++;
 	} else if (str[0] == '%') {
 		litBase = 2;
+		str++;
 	}
 	long x = strtol(str, &endptr, litBase);
 	stack.push(x);
@@ -183,8 +186,9 @@ Error Interpreter::execute(const char* text, PrintCallback print)
 			if (!word) {
 				if (!executeLiteral(current)) {
 					result = Error(Error::WORD_NOT_FOUND, current);
+					goto cleanup;
 				}
-				goto cleanup;
+				continue;
 			}
 			InterpretationContext ic(*this, next, print);
 			word->call(ic);
