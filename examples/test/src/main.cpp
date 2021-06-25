@@ -3,7 +3,14 @@
 
 using namespace ForthyShell;
 
-Interpreter i{Dictionary::Default};
+const Word customWords[] {
+	{"myword", [](InterpretationContext& c){
+		c.print("myword called");
+	}}
+};
+
+Interpreter i(Dictionary(customWords, sizeof(customWords) / sizeof(Word),
+	&Dictionary::Default));
 
 void setup()
 {
@@ -12,7 +19,7 @@ void setup()
 	Serial.write("ForthyShell test");
 }
 
-void out(const char* c)
+void outputHelper(const char* c)
 {
 	Serial.write(c);
 }
@@ -21,7 +28,7 @@ void loop()
 {
 	Serial.write("\nok ");
 	String s = Serial.readStringUntil('\n');
-	Error e = i.execute(s.c_str(), out);
+	Error e = i.execute(s.c_str(), outputHelper);
 	if (e != Error::OK) {
 		Serial.write("error: ");
 		Serial.write(e.getMessage());
