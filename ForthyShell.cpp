@@ -149,15 +149,23 @@ const Dictionary& Interpreter::getDict()
 	return dict;
 }
 
-int Interpreter::getBase()
+int* Interpreter::getBasePtr()
 {
-	return base;
+	return &base;
 }
 
 bool Interpreter::executeLiteral(const char* str)
 {
 	char* endptr;
-	long x = strtol(str, &endptr, getBase());
+	int litBase = base;
+	if (str[0] == '$') {
+		litBase = 16;
+	} else if (str[0] == '#') {
+		litBase = 10;
+	} else if (str[0] == '%') {
+		litBase = 2;
+	}
+	long x = strtol(str, &endptr, litBase);
 	stack.push(x);
 	return (*endptr == '\0');
 }
@@ -234,8 +242,13 @@ void InterpretationContext::print(const char* str)
 	printCallback(str);
 }
 
+int* InterpretationContext::getBasePtr()
+{
+	return interpreter.getBasePtr();
+}
+
 int InterpretationContext::getBase()
 {
-	return interpreter.getBase();
+	return *interpreter.getBasePtr();
 }
 

@@ -3,20 +3,22 @@
 
 using namespace ForthyShell;
 
-const Word customWords[] {
+constexpr const Word customWords[] {
 	{"myword", [](InterpretationContext& c){
 		c.print("myword called");
 	}}
 };
+constexpr const Dictionary d(customWords, sizeof(customWords) / sizeof(Word),
+	&Dictionary::Default);
 
-Interpreter i(Dictionary(customWords, sizeof(customWords) / sizeof(Word),
-	&Dictionary::Default));
+Interpreter i(d);
 
 void setup()
 {
-	Serial.begin(9600);
+	Serial.begin(115200);
 	Serial.setTimeout(-1);
-	Serial.write("ForthyShell test");
+	Serial.write("ForthyShell test. Number of words: ");
+	Serial.println(i.getDict().getNumWords());
 }
 
 void outputHelper(const char* c)

@@ -17,9 +17,16 @@ static void output_cell(InterpretationContext& c)
 	c.print(buf);
 }
 
+static void getBasePtr(InterpretationContext& c)
+{
+	c.push((int) c.getBasePtr());
+}
+
 static void store(InterpretationContext& c)
 {
 	int* addr = (int*) c.pop();
+	if (!addr)
+		return;
 	int x = c.pop();
 	*addr = x;
 }
@@ -81,6 +88,7 @@ const Word defaultWords[] {
 	FORTHY_NUMBER(1),
 	FORTHY_BINOP(+),
 	FORTHY_BINOP(-),
+	{"BASE", getBasePtr},
 	{"!", store},
 	{"@", fetch},
 	{"c!", cstore},

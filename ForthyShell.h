@@ -83,6 +83,12 @@ namespace ForthyShell {
 		const Word* getWords() const { return first; }
 		const Dictionary* getNext() const { return searchAfter; };
 		size_t getNumEntries() const { return numEntries; }
+		size_t getNumWords() const {
+			size_t i = getNumEntries();
+			if (searchAfter)
+				i += searchAfter->getNumWords();
+			return i;
+		}
 
 		static const Dictionary Default;
 	};
@@ -106,7 +112,7 @@ namespace ForthyShell {
 
 		Stack& getStack();
 		const Dictionary& getDict();
-		int getBase();
+		int* getBasePtr();
 
 		Error execute(const char* text, PrintCallback print);
 	};
@@ -126,6 +132,7 @@ namespace ForthyShell {
 		char* getLineBuffer();
 		void print(const char*);
 		const Dictionary& getDictionary();
+		int* getBasePtr();
 		int getBase();
 		Stack& getStack();
 	private:
