@@ -88,7 +88,6 @@ const Word defaultWords[] {
 	FORTHY_NUMBER(1),
 	FORTHY_BINOP(+),
 	FORTHY_BINOP(-),
-	{"BASE", getBasePtr},
 	{"!", store},
 	{"@", fetch},
 	{"c!", cstore},
@@ -104,6 +103,9 @@ const Word defaultWords[] {
 	FORTHY_BINOP(/),
 	{".\"", output_literal_str},
 	{".s", stack},
+	{"BASE", getBasePtr},
+	{"hex", [](InterpretationContext& c){ *c.getBasePtr() = 16; }},
+	{"dec", [](InterpretationContext& c){ *c.getBasePtr() = 10; }},
 	{"words", words}
 };
 
