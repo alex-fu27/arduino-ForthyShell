@@ -1,0 +1,21 @@
+{
+  "name": "ForthyShell",
+  "keywords": "forth, shell, communication",
+  "license": "MIT",
+  "repository": {
+	  "type": "git",
+	  "url": "https://github.com/alex-fu27/arduino-ForthyShell"
+  },
+  "examples": [{
+	  "name": "Simple example with custom words",
+	  "base": "examples/test",
+	  "files": ["src/main.cpp"]
+  }],
+  "authors": {
+	  "name": "Alexander Fuchs",
+	  "email": "alex.fu27@gmail.com"
+  },
+  "description": "Add a simple Forth-like interface to your Arduino project.",
+  "frameworks": "arduino",
+  "version": "1.0.0"
+}
