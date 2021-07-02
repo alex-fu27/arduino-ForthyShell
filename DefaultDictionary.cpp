@@ -79,6 +79,36 @@ static void stack(InterpretationContext& c)
 	}
 }
 
+static void dup(InterpretationContext& c)
+{
+	int i = c.pop();
+	c.push(i);
+	c.push(i);
+}
+
+static void drop(InterpretationContext& c)
+{
+	(void) c.pop();
+}
+
+static void swap(InterpretationContext& c)
+{
+	int a = c.pop();
+	int b = c.pop();
+	c.push(a);
+	c.push(b);
+}
+
+static void rot(InterpretationContext& c)
+{
+	int a = c.pop();
+	int b = c.pop();
+	int d = c.pop();
+	c.push(b);
+	c.push(a);
+	c.push(d);
+}
+
 
 #if __cplusplus >= 201703L
 constexpr
@@ -101,6 +131,10 @@ const Word defaultWords[] {
 	FORTHY_BINOP(>=),
 	FORTHY_BINOP(*),
 	FORTHY_BINOP(/),
+	{"dup", dup},
+	{"drop", drop},
+	{"swap", swap},
+	{"rot", rot},
 	{".\"", output_literal_str},
 	{".s", stack},
 	{"BASE", getBasePtr},
