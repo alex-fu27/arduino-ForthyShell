@@ -2,7 +2,7 @@
 #define FORTHY_BINOP2(op, impl) {op, [](InterpretationContext& c) { \
 	int a = c.pop(); \
 	int b = c.pop(); \
-	c.push(a impl b); \
+	c.push(b impl a); \
 }}
 
 /* ( a b -- [a op b] */

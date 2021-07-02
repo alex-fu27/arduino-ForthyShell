@@ -17,5 +17,5 @@
   },
   "description": "Add a simple Forth-like interface to your Arduino project.",
   "frameworks": "arduino",
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
